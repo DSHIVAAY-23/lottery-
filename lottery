@@ -1,0 +1,38 @@
+//SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.5.0<0.9.0;
+ contract lottery
+ {
+ address public manager;
+ address payable[] public participants; //  dyanamic array type coz to many participants
+
+  constructor()
+  {
+      manager = msg.sender; // global variable 
+  }
+  receive() external payable// no arguement 
+  {
+      require(msg.value==1 ether);
+      participants.push(payable(msg.sender));// important
+ }
+ function getBalance() public view returns(uint){
+     require(msg.sender== manager);// confirm manager address
+     return address(this).balance;
+
+
+ }
+ function random() public view returns(uint){
+     return uint(keccak256(abi.encodePacked(block.difficulty,block.timestamp,participants.length)));// not remembering just copy when needed
+
+ }
+// we need logic so we need index so we create this function
+ function selectWinner() public{
+     require(msg.sender==manager);
+     require(participants.length>=3);
+     uint r=random();
+     address payable winner;
+     uint index =r % participants.length;// % return remaindier
+     winner = participants[index];
+     winner.transfer(getBalance());
+     participants=new address payable[](0);//dynamic arrar size 0  that set every time contract
+ }
+ }
